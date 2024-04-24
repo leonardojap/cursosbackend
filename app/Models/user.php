@@ -13,6 +13,6 @@ class User extends Model
     protected $fillable = ['name', 'lastname', 'email','password'];
 
     public function courses(){
-        return $this->hasMany(courses::class, 'user_id');
+        return $this->hasMany(Course::class, 'user_id');
     }
 }
