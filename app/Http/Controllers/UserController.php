@@ -62,12 +62,24 @@ class UserController
     public function store(Request $request)
     {
         try {
+
+            //validate password with at least one uppercase letter, one lowercase letter, one number and one special character
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|max:100',
                 'lastname' => 'required|max:100',
                 'email' => 'required|email|unique:users',
-                'password' => 'required|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'password' => [
+                    'required', 'string',
+                    'min:8',             // must be at least 8 characters in length
+                    'regex:/[a-z]/',      // must contain at least one lowercase letter
+                    'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                    'regex:/[0-9]/',      // must contain at least one digit
+                    'regex:/[@$!%*#?&-]/' // must contain a special character
+                ],
             ]);
+
+
 
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()], 400);
@@ -106,7 +118,16 @@ class UserController
      *          response=200,
      *          description="User logged in successfully",
      *          @OA\JsonContent(
-     *              @OA\Property(property="data", type="string", example="1234567890"),
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="name", type="string", example="John"),
+     *                  @OA\Property(property="lastname", type="string", example="Doe"),
+     *                  @OA\Property(property="email", type="string", example="email@email.com"),
+     *                  @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *          ),
      *              @OA\Property(property="message", type="string", example="User logged in successfully"),
      *          )
      *      ),
@@ -117,7 +138,14 @@ class UserController
         try {
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
-                'password' => 'required|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'password' => [
+                    'required', 'string',
+                    'min:8',             // must be at least 8 characters in length
+                    'regex:/[a-z]/',      // must contain at least one lowercase letter
+                    'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                    'regex:/[0-9]/',      // must contain at least one digit
+                    'regex:/[@$!%*#?&-]/' // must contain a special character
+                ],
             ]);
 
             if ($validator->fails()) {
@@ -130,10 +158,17 @@ class UserController
                 return response()->json(['error' => 'Invalid credentials'], 401);
             }
 
-            $token = $user->createToken('auth_token',[],
+            unset($user['password']);
+
+            $token = $user->createToken(
+                'auth_token',
+                [],
                 now()->addDays(1)
             )->plainTextToken;
-            return response()->json(['data' => $token, 'message' => 'User logged in successfully']);
+            return response()->json(['data' => [
+                'token' => $token,
+                'user' => $user
+            ], 'message' => 'User logged in successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
