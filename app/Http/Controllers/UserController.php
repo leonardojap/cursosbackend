@@ -62,12 +62,24 @@ class UserController
     public function store(Request $request)
     {
         try {
+
+            //validate password with at least one uppercase letter, one lowercase letter, one number and one special character
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|max:100',
                 'lastname' => 'required|max:100',
                 'email' => 'required|email|unique:users',
-                'password' => 'required|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'password' => [
+                    'required', 'string',
+                    'min:8',             // must be at least 8 characters in length
+                    'regex:/[a-z]/',      // must contain at least one lowercase letter
+                    'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                    'regex:/[0-9]/',      // must contain at least one digit
+                    'regex:/[@$!%*#?&-]/' // must contain a special character
+                ],
             ]);
+
+
 
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()], 400);
@@ -117,7 +129,14 @@ class UserController
         try {
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
-                'password' => 'required|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+                'password' => [
+                    'required', 'string',
+                    'min:8',             // must be at least 8 characters in length
+                    'regex:/[a-z]/',      // must contain at least one lowercase letter
+                    'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                    'regex:/[0-9]/',      // must contain at least one digit
+                    'regex:/[@$!%*#?&-]/' // must contain a special character
+                ],
             ]);
 
             if ($validator->fails()) {
@@ -130,7 +149,9 @@ class UserController
                 return response()->json(['error' => 'Invalid credentials'], 401);
             }
 
-            $token = $user->createToken('auth_token',[],
+            $token = $user->createToken(
+                'auth_token',
+                [],
                 now()->addDays(1)
             )->plainTextToken;
             return response()->json(['data' => $token, 'message' => 'User logged in successfully']);
