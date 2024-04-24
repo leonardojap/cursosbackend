@@ -11,9 +11,65 @@ use Illuminate\Support\Facades\Validator;
 
 class studenstController
 {
+
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *      path="/api/students",
+     *      operationId="getStudents",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Get list of students",
+     *      description="Returns list of students",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Page number",
+     *          required=true,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="limit",
+     *          description="Page number",
+     *          required=true,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=1),
+     *                      @OA\Property(property="name", type="string", example="John"),
+     *                      @OA\Property(property="lastname", type="string", example="Doe"),
+     *                      @OA\Property(property="email", type="string", example="email@email.com"),
+     *                      @OA\Property(property="age", type="integer", example=25),
+     *                      @OA\Property(property="identification", type="string", example="12345678901"),
+     *                      @OA\Property(property="user_id", type="integer", example=1),
+     *                      @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                      @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  )
+     *              ),
+     *              @OA\Property(property="current_page", type="integer", example=1),
+     *              @OA\Property(property="from", type="integer", example=1),
+     *              @OA\Property(property="last_page", type="integer", example=10),
+     *              @OA\Property(property="path", type="string", example="http://example.com/api/students"),
+     *              @OA\Property(property="per_page", type="integer", example=15),
+     *              @OA\Property(property="to", type="integer", example=15),
+     *              @OA\Property(property="total", type="integer", example=150),
+     *          )
+     *      )
+     * )
      */
+
     public function index(Request $request)
     {
         try {
@@ -52,8 +108,47 @@ class studenstController
         }
     }
 
+
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *      path="/api/students",
+     *      operationId="storeStudent",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Store new student",
+     *      description="Returns student data",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"name","lastname","email","age","identification","user_id"},
+     *              @OA\Property(property="name", type="string", format="text", example="John"),
+     *              @OA\Property(property="lastname", type="string", format="text", example="Doe"),
+     *              @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+     *              @OA\Property(property="age", type="integer", example=20),
+     *              @OA\Property(property="identification", type="string", format="text", example="1234567890"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="John"),
+     *                  @OA\Property(property="lastname", type="string", example="Doe"),
+     *                  @OA\Property(property="email", type="string", example="email@email.com"),
+     *                  @OA\Property(property="age", type="integer", example=25),
+     *                  @OA\Property(property="identification", type="string", example="12345678901"),
+     *                  @OA\Property(property="user_id", type="integer", example=1),
+     *                  @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Student created successfully"),
+     *          )
+     *      )
+     * )
      */
     public function store(Request $request)
     {
@@ -91,14 +186,77 @@ class studenstController
             $student->identification = $request->identification;
             $student->user_id = $request->user_id;
             $student->save();
-            return response()->json(['student' => $student, 'message' => 'Student created successfully']);
+            return response()->json(['data' => $student, 'message' => 'Student created successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
+
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *      path="/api/students/{id}",
+     *      operationId="getStudent",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Get existing student",
+     *      description="Returns student data",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Student id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="John"),
+     *                  @OA\Property(property="lastname", type="string", example="Doe"),
+     *                  @OA\Property(property="email", type="string", example="email@email.com"),
+     *                  @OA\Property(property="age", type="integer", example=25),
+     *                  @OA\Property(property="identification", type="string", example="12345678901"),
+     *                  @OA\Property(property="user_id", type="integer", example=1),
+     *                  @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(
+     *                      property="courses",
+     *                      type="array",
+     *                      @OA\Items(
+     *                          type="object",
+     *                          @OA\Property(property="id", type="integer", example=1),
+     *                          @OA\Property(property="name", type="string", example="Course 1"),
+     *                          @OA\Property(property="user_id", type="integer", example=1),
+     *                          @OA\Property(property="start_date", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                          @OA\Property(property="end_date", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                          @OA\Property(
+     *                              property="schedules",
+     *                              type="array",
+     *                              @OA\Items(
+     *                                  type="object",
+     *                                  @OA\Property(property="id", type="integer", example=1),
+     *                                  @OA\Property(property="day", type="string", example="LUNES"),
+     *                                  @OA\Property(property="start_hour", type="integer", example=8),
+     *                                  @OA\Property(property="end_hour", type="integer", example=10),
+     *                                  @OA\Property(property="course_id", type="integer", example=1),
+     *                              )
+     *                          ),
+     *                      ),
+     *                      @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                      @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  ),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Student retrieved successfully"),
+     *          )
+     *      ),
+     * )
      */
     public function show(string $id, Request $request)
     {
@@ -116,7 +274,7 @@ class studenstController
                 return response()->json(['error' => 'Student not found'], 404);
             }
             return response()->json([
-                'student' => $student,
+                'data' => $student,
                 'message' => 'Student retrieved successfully',
             ]);
         } catch (ValidationException $e) {
@@ -125,7 +283,54 @@ class studenstController
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Put(
+     *      path="/api/students/{id}",
+     *      operationId="updateStudent",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Update existing student",
+     *      description="Returns updated student data",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Student id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"name","lastname","email","age","identification","user_id"},
+     *              @OA\Property(property="name", type="string", format="text", example="John"),
+     *              @OA\Property(property="lastname", type="string", format="text", example="Doe"),
+     *              @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+     *              @OA\Property(property="age", type="integer", example=20),
+     *              @OA\Property(property="identification", type="string", format="text", example="1234567890"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="John"),
+     *                  @OA\Property(property="lastname", type="string", example="Doe"),
+     *                  @OA\Property(property="email", type="string", example="email@email.com"),
+     *                  @OA\Property(property="age", type="integer", example=25),
+     *                  @OA\Property(property="identification", type="string", example="12345678901"),
+     *                  @OA\Property(property="user_id", type="integer", example=1),
+     *                  @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Student updated successfully"),
+     *          )
+     *      )
+     * )
      */
     public function update(string $id, Request $request)
     {
@@ -158,14 +363,51 @@ class studenstController
             $student->user_id = $request->user_id;
             $student->save();
 
-            return response()->json(['student' => $student, 'message' => 'Student updated successfully']);
+            return response()->json(['data' => $student, 'message' => 'Student updated successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
+
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *      path="/api/students/{id}",
+     *      operationId="deleteStudent",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Delete existing student",
+     *      description="Returns deleted student data",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Student id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="John"),
+     *                  @OA\Property(property="lastname", type="string", example="Doe"),
+     *                  @OA\Property(property="email", type="string", example="email@email.com"),
+     *                  @OA\Property(property="age", type="integer", example=25),
+     *                  @OA\Property(property="identification", type="string", example="12345678901"),
+     *                  @OA\Property(property="user_id", type="integer", example=1),
+     *                  @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                  @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Student deleted successfully"),
+     *          )
+     *      ),
+     * )
      */
     public function destroy(string $id, Request $request)
     {
@@ -187,12 +429,44 @@ class studenstController
 
             $student->delete();
 
-            return response()->json(['student' => $student, 'message' => 'Student deleted successfully']);
+            return response()->json(['data' => $student, 'message' => 'Student deleted successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
+
+    /**
+     * @OA\Post(
+     *      path="/api/bind-student-course",
+     *      operationId="bindStudentCourse",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Bind student to a course",
+     *      description="Returns student and course data",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"student_id","course_id"},
+     *              @OA\Property(property="student_id", type="integer", example=1),
+     *              @OA\Property(property="course_id", type="integer", example=1),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="object",
+     *                  @OA\Property(property="student_id", type="integer", example=1),
+     *                  @OA\Property(property="course_id", type="integer", example=1),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Student enrolled in course successfully"),
+     *          )
+     *      )
+     * )
+     */
     public function bindStudentCourse(Request $request)
     {
         try {
@@ -231,12 +505,47 @@ class studenstController
             $course_student->course_id = $request->course_id;
             $course_student->save();
 
-            return response()->json(['course_student' => $course_student, 'message' => 'Student enrolled in course successfully']);
+            return response()->json(['data' => $course_student, 'message' => 'Student enrolled in course successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
+    /**
+     * @OA\Delete(
+     *      path="/api/student-courses/{student_id}/{course_id}",
+     *      operationId="unbindStudentCourse",
+     *      tags={"Students"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Unbind student from a course",
+     *      description="Returns a message",
+     *      @OA\Parameter(
+     *          name="student_id",
+     *          description="Student id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="course_id",
+     *          description="Course id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Student unenrolled from course successfully"),
+     *          )
+     *      )
+     * )
+     */
     public function unbindStudentCourse(string $student_id, string $course_id,Request $request)
     {
         try {
@@ -269,6 +578,53 @@ class studenstController
         }
     }
 
+
+    /**
+     * @OA\Get(
+     *      path="/api/dashboard",
+     *      operationId="getStudentStadistics",
+     *      tags={"Dashboard"},
+     *      security={{"bearer_token":{}}},
+     *      summary="Get student stadistics",
+     *      description="Returns stadistics data",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(
+     *                      property="topSixMoths",
+     *                      type="array", @OA\Items(
+     *                          type="object",
+     *                          @OA\Property(property="id", type="integer", example=1),
+     *                          @OA\Property(property="name", type="string", example="Course 1"),
+     *                          @OA\Property(property="user_id", type="integer", example=1),
+     *                          @OA\Property(property="start_date", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                          @OA\Property(property="end_date", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *                      )
+     *                  ),
+     *                  @OA\Property(
+     *                      property="topStudents",
+     *                      type="array",
+     *                      @OA\Items(
+     *                          type="object",
+     *                          @OA\Property(property="id", type="integer", example=1),
+     *                          @OA\Property(property="name", type="string", example="John"),
+     *                          @OA\Property(property="lastname", type="string", example="Doe"),
+     *                          @OA\Property(property="email", type="string", example="email@email.com"),
+     *                          @OA\Property(property="age", type="integer", example=25),
+     *                          @OA\Property(property="identification", type="string", example="12345678901"),
+     *                          @OA\Property(property="user_id", type="integer", example=1),
+     *                      )
+     *                  ),
+     *                  @OA\Property(property="totalStudents", type="integer"),
+     *                  @OA\Property(property="totalCourses", type="integer"),
+     *              ),
+     *              @OA\Property(property="message", type="string", example="Stadistics retrieved successfully"),
+     *          )
+     *      )
+     * )
+     */
     public function stadistics(Request $request)
     {
         try {

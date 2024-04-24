@@ -28,9 +28,12 @@ class CheckSanctumAuth
 
 
         $currentDate = date('Y-m-d H:i:s');
+        if(!$accessToken){
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
         $isExpiredToken = $accessToken->expires_at < $currentDate;
 
-        if (!$accessToken || $isExpiredToken) {
+        if ($isExpiredToken) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 

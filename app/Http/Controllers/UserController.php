@@ -10,11 +10,54 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
 
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="Teacher API",
+ *      description="Teacher API",
+ * )
+ *
+ */
+
 class UserController
 {
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *      path="/api/register",
+     *      summary="Register a user",
+     *      description="Register a user",
+     *      operationId="register",
+     *      tags={"Teacher"},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="User registration",
+     *          @OA\JsonContent(
+     *              required={"name","lastname","email","password"},
+     *              @OA\Property(property="name", type="string", format="name", example="John"),
+     *              @OA\Property(property="lastname", type="string", format="lastname", example="Doe"),
+     *              @OA\Property(property="email", type="string", format="email", example="email@emial.com"),
+     *              @OA\Property(property="password", type="string", format="password", example="xxxxxxxx@xxx"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *        response=200,
+     *        description="User created successfully",
+     *        @OA\JsonContent(
+     *          @OA\Property(
+     *              property="data",
+     *              type="object",
+     *              @OA\Property(property="name", type="string", example="John"),
+     *              @OA\Property(property="lastname", type="string", example="Doe"),
+     *              @OA\Property(property="email", type="string", example="email@email.com"),
+     *              @OA\Property(property="created_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *              @OA\Property(property="updated_at", type="string", example="2021-09-01T00:00:00.000000Z"),
+     *              @OA\Property(property="id", type="integer", example=1),
+     *          ),
+     *          @OA\Property(property="message", type="string", example="User created successfully"),
+     *        )
+     *      ),
+     * )
      */
     public function store(Request $request)
     {
@@ -37,14 +80,37 @@ class UserController
             $user->password = Hash::make($request->password);
             $user->save();
             unset($user['password']);
-            return response()->json(['user' => $user, 'message' => 'User created successfully']);
+            return response()->json(['data' => $user, 'message' => 'User created successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
     /**
-     * Login a user
+     * @OA\Post(
+     *      path="/api/login",
+     *      summary="Login a user",
+     *      description="Login a user",
+     *      operationId="login",
+     *      tags={"Teacher"},
+     *      @OA\RequestBody(
+     *      required=true,
+     *      description="User login",
+     *          @OA\JsonContent(
+     *              required={"email","password"},
+     *              @OA\Property(property="email", type="string", format="email", example="email@email.com"),
+     *              @OA\Property(property="password", type="string", format="password", example="xxxxxxxx@xxx"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="User logged in successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="data", type="string", example="1234567890"),
+     *              @OA\Property(property="message", type="string", example="User logged in successfully"),
+     *          )
+     *      ),
+     * )
      */
     public function login(Request $request)
     {
@@ -67,14 +133,28 @@ class UserController
             $token = $user->createToken('auth_token',[],
                 now()->addDays(1)
             )->plainTextToken;
-            return response()->json(['token' => $token, 'message' => 'User logged in successfully']);
+            return response()->json(['data' => $token, 'message' => 'User logged in successfully']);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         }
     }
 
     /**
-     * Logout a user
+     * @OA\Get(
+     *      path="/api/logout",
+     *      summary="Logout a user",
+     *      description="Logout a user",
+     *      operationId="logout",
+     *      tags={"Teacher"},
+     *      security={{"bearer_token":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="User logged out successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="User logged out successfully"),
+     *          )
+     *      ),
+     * )
      */
     public function logout(Request $request)
     {
