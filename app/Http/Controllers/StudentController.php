@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\students;
-use App\Models\courses;
-use App\Models\course_student;
+use App\Models\Student;
+use App\Models\Course;
+use App\Models\CourseStudent;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
-class studenstController
+class StudentController
 {
 
     /**
@@ -36,6 +36,15 @@ class studenstController
      *          in="query",
      *          @OA\Schema(
      *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="search",
+     *          description="Search term",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
      *          )
      *      ),
      *      @OA\Response(
@@ -86,7 +95,7 @@ class studenstController
             $page = $request->page;
             $limit = $request->limit;
             $search = $request->search;
-            $query = students::where('user_id', $request->user_id);
+            $query = Student::where('user_id', $request->user_id);
             if ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->orWhere('name', 'like', '%' . $search . '%')
@@ -168,7 +177,7 @@ class studenstController
             $email = $request->email;
             $identification = $request->identification;
 
-            $getStudent = students::where('user_id', $request->user_id)
+            $getStudent = Student::where('user_id', $request->user_id)
                 ->where(function ($query) use ($email, $identification) {
                     $query->where('email', $email)
                         ->orWhere('identification', $identification);
@@ -178,7 +187,7 @@ class studenstController
                 return response()->json(['error' => 'Student already exists'], 400);
             }
 
-            $student = new students();
+            $student = new Student();
             $student->name = $request->name;
             $student->lastname = $request->lastname;
             $student->email = $request->email;
@@ -264,7 +273,7 @@ class studenstController
 
             $user_id = $request->user_id;
 
-            $student = students::where('students.id', $id)
+            $student = Student::where('students.id', $id)
                 ->where('students.user_id', $user_id)
                 ->with(['courses' => function ($query) use ($user_id, $id) {
                     $query->where('courses.user_id', $user_id)->with(['schedules']);
@@ -347,7 +356,7 @@ class studenstController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $student = students::where('id', $id)
+            $student = Student::where('id', $id)
                 ->where('user_id', $request->user_id)
                 ->first();
 
@@ -412,7 +421,7 @@ class studenstController
     public function destroy(string $id, Request $request)
     {
         try {
-            $student = students::where('id', $id)
+            $student = Student::where('id', $id)
                 ->where('user_id', $request->user_id)
                 ->first();
 
@@ -421,7 +430,7 @@ class studenstController
             }
 
 
-            $course = course_student::where('student_id', $id)->first();
+            $course = CourseStudent::where('student_id', $id)->first();
 
             if ($course) {
                 return response()->json(['error' => 'Student is enrolled in a course'], 400);
@@ -479,28 +488,28 @@ class studenstController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $isStudentOfProfessor = students::where('id', $request->student_id)
+            $isStudentOfProfessor = Student::where('id', $request->student_id)
                 ->where('user_id', $request->user_id)
                 ->first();
             if (!$isStudentOfProfessor) {
                 return response()->json(['error' => 'Student not found'], 404);
             }
 
-            $isProfessorCourse = courses::where('id', $request->course_id)
+            $isProfessorCourse = Course::where('id', $request->course_id)
                 ->where('user_id', $request->user_id)
                 ->first();
             if (!$isProfessorCourse) {
                 return response()->json(['error' => 'Course not found'], 404);
             }
 
-            $isAlreadyEnrolled = course_student::where('student_id', $request->student_id)
+            $isAlreadyEnrolled = CourseStudent::where('student_id', $request->student_id)
                 ->where('course_id', $request->course_id)
                 ->first();
             if ($isAlreadyEnrolled) {
                 return response()->json(['error' => 'Student is already enrolled in this course'], 400);
             }
 
-            $course_student = new course_student();
+            $course_student = new CourseStudent();
             $course_student->student_id = $request->student_id;
             $course_student->course_id = $request->course_id;
             $course_student->save();
@@ -549,21 +558,21 @@ class studenstController
     public function unbindStudentCourse(string $student_id, string $course_id,Request $request)
     {
         try {
-            $course_student = course_student::where('student_id', $student_id)
+            $course_student = CourseStudent::where('student_id', $student_id)
                 ->where('course_id', $course_id)
                 ->first();
 
             if (!$course_student) {
                 return response()->json(['error' => 'Student is not enrolled in this course'], 400);
             }
-            $isStudentOfProfessor = students::where('id', $student_id)
+            $isStudentOfProfessor = Student::where('id', $student_id)
                 ->where('user_id', $request->user_id)
                 ->first();
             if (!$isStudentOfProfessor) {
                 return response()->json(['error' => 'Student not found'], 404);
             }
 
-            $isProfessorCourse = courses::where('id', $course_id)
+            $isProfessorCourse = Course::where('id', $course_id)
                 ->where('user_id', $request->user_id)
                 ->first();
             if (!$isProfessorCourse) {
@@ -628,20 +637,20 @@ class studenstController
     public function stadistics(Request $request)
     {
         try {
-            $topSixMoths = courses::where('user_id', $request->user_id)
+            $topSixMoths = Course::where('user_id', $request->user_id)
                 ->where('created_at', '>=', now()->subMonths(6))
                 ->withCount('students')
                 ->orderBy('students_count', 'desc')
                 ->limit(3)
                 ->get();
             // top 3 de estudiantes con más cursos
-            $topStudents = students::where('user_id', $request->user_id)
+            $topStudents = Student::where('user_id', $request->user_id)
                 ->withCount('courses')
                 ->orderBy('courses_count', 'desc')
                 ->limit(3)
                 ->get();
-            $totalStudents = students::where('user_id', $request->user_id)->count();
-            $totalCourses = courses::where('user_id', $request->user_id)->count();
+            $totalStudents = Student::where('user_id', $request->user_id)->count();
+            $totalCourses = Course::where('user_id', $request->user_id)->count();
             return response()->json([
                 'data' => [
                     'topSixMoths' => $topSixMoths,

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\courses;
-use App\Models\schedules;
+use App\Models\Course;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
-use App\Models\course_student;
+use App\Models\CourseStudent;
 
-class coursesController
+class CourseController
 {
     /**
      * @OA\Get(
@@ -96,7 +96,7 @@ class coursesController
             $limit = $request->limit;
             $user_id = $request->user_id;
             $search = $request->search;
-            $query = courses::where('user_id', $user_id);
+            $query = Course::where('user_id', $user_id);
             if ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->orWhere('name', 'like', '%' . $search . '%')
@@ -118,7 +118,6 @@ class coursesController
             return response()->json(['error' => $e->errors()], 400);
         }
     }
-
 
     /**
      * @OA\Post(
@@ -169,7 +168,7 @@ class coursesController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $course = new courses();
+            $course = new Course();
             $course->name = $request->name;
             $course->start_date = $request->start_date;
             $course->end_date = $request->end_date;
@@ -235,7 +234,7 @@ class coursesController
     {
         try {
 
-            $course = courses::with('schedules')
+            $course = Course::with('schedules')
             ->where('id', $id)
             ->where('user_id', $request->user_id)
             ->first();
@@ -254,7 +253,6 @@ class coursesController
             return response()->json(['error' => $e->errors()], 400);
         }
     }
-
 
     /**
      * @OA\Put(
@@ -314,7 +312,7 @@ class coursesController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $course = courses::where('id', $id)
+            $course = Course::where('id', $id)
                 ->where('user_id', $request->user_id)
                 ->first();
             $course->name = $request->name;
@@ -365,7 +363,7 @@ class coursesController
     public function destroy(string $id, Request $request)
     {
         try {
-            $course = courses::where('id', $id)
+            $course = Course::where('id', $id)
                 ->where('user_id', $request->user_id)
                 ->first();
 
@@ -373,13 +371,13 @@ class coursesController
                 return response()->json(['error' => 'Course not found'], 404);
             }
 
-            $studentsInCourse = course_student::where('course_id', $id)->count();
+            $studentsInCourse = CourseStudent::where('course_id', $id)->count();
 
             if ($studentsInCourse > 0) {
                 return response()->json(['error' => 'Course has students, cannot be deleted'], 400);
             }
 
-            schedules::where('course_id', $id)->delete();
+            Schedule::where('course_id', $id)->delete();
 
             $course->delete();
             return response()->json(['data' => $course, 'message' => 'Course deleted successfully']);

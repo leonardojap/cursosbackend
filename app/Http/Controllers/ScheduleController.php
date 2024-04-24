@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\schedules;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
-class schedulesController
+class ScheduleController
 {
 
 
@@ -64,7 +64,7 @@ class schedulesController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $schedule = new schedules();
+            $schedule = new Schedule();
             $schedule->day = $request->day;
             $schedule->start_hour = $request->start_hour;
             $schedule->end_hour = $request->end_hour;
@@ -138,7 +138,7 @@ class schedulesController
                 return response()->json(['error' => $validator->errors()], 400);
             }
 
-            $schedule = schedules::find($id);
+            $schedule = Schedule::find($id);
             $schedule->day = $request->day;
             $schedule->start_hour = $request->start_hour;
             $schedule->end_hour = $request->end_hour;
@@ -179,7 +179,7 @@ class schedulesController
     public function destroy(string $id)
     {
         try {
-            $schedule = schedules::find($id);
+            $schedule = Schedule::find($id);
 
             if (!$schedule) {
                 return response()->json(['error' => 'Schedule not found'], 404);
